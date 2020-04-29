@@ -5,3 +5,9 @@ export const SET_USER = 'SET_USER';
 export const SET_ERRORS = 'SET_ERRORS';
 export const CLEAR_ERRORS = 'CLEAR_ERRORS';
 export const LOGOUT = 'LOGOUT';
+export const SET_USER_CHANNELS = 'SET_USER_CHANNELS';
+export const SET_LOADING_USER_CHANNELS = 'SET_LOADING_USER_CHANNELS';
+// Channels action types
+export const SET_CHANNELS = 'SET_CHANNELS';
+export const SET_CHANNELS_LOADING = 'SET_CHANNELS_LOADING';
+export const CLEAR_CHANNELS = 'CLEAR_CHANNELS';
