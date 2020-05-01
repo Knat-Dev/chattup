@@ -7,9 +7,13 @@ import {
     LOGOUT,
     SET_USER_CHANNELS,
     SET_LOADING_USER_CHANNELS,
+    SET_CHANNEL,
 } from '../types';
 import md5 from 'md5';
 import { Send } from '@material-ui/icons';
+import { setMessages } from './messages';
+import { setChannels } from './channels';
+import { setChannel } from './channel';
 
 export const login = (userData, shouldLoad) => (dispatch) => {
     const { email, password } = userData;
@@ -40,7 +44,6 @@ export const login = (userData, shouldLoad) => (dispatch) => {
             shouldLoad(false);
         })
         .catch((e) => {
-            console.log(e.code);
             if (e.code === 'auth/user-not-found')
                 dispatch(
                     setErrors({
@@ -65,7 +68,7 @@ export const login = (userData, shouldLoad) => (dispatch) => {
         });
 };
 
-export const signUp = (credentials, shouldLoad) => (dispatch) => {
+export const signUp = (credentials, shouldLoad, history) => (dispatch) => {
     const { email, password, confirmPassword, displayName } = credentials;
 
     const errors = {};
@@ -103,7 +106,9 @@ export const signUp = (credentials, shouldLoad) => (dispatch) => {
 
     query.once('value', (snapshot) => {
         if (!snapshot.exists()) {
-            const gravatar = `https://www.gravatar.com/avatar/${md5(email)}`;
+            const gravatar = `https://www.gravatar.com/avatar/${md5(
+                email
+            )}/?d=identicon`;
             firebase
                 .auth()
                 .createUserWithEmailAndPassword(email, password)
@@ -115,14 +120,17 @@ export const signUp = (credentials, shouldLoad) => (dispatch) => {
                         createdAt: new Date().toISOString(),
                     });
 
-                    user.user.updateProfile({
-                        displayName: displayName,
-                        photoURL: gravatar,
-                    });
+                    user.user
+                        .updateProfile({
+                            displayName: displayName,
+                            photoURL: gravatar,
+                        })
+                        .then(() => {
+                            dispatch(setUserChannels(credentials.displayName));
+                            dispatch(setChannels(credentials.displayName));
 
-                    dispatch(setUser(user.user));
-                    dispatch({ type: SET_AUTHENTICATED });
-                    dispatch(clearErrors());
+                            dispatch(clearErrors());
+                        });
                 })
                 .catch((e) => {
                     if (e.code === 'auth/email-already-in-use')
@@ -158,47 +166,59 @@ export const clearErrors = () => (dispatch) => {
 };
 
 export const setUser = (user) => (dispatch) => {
+    console.log('hi');
     dispatch({ type: SET_USER, payload: user });
 };
 
 export const setUserChannels = (displayName) => (dispatch) => {
     dispatch({ type: SET_LOADING_USER_CHANNELS });
-    database.ref(`userChannel/${displayName}`).on('value', (snap) => {
+    let firstRender = true;
+    console.log(displayName);
+    return database.ref(`userChannel/${displayName}`).on('value', (snap) => {
         const userChannelIds = [];
-
+        let channels = [];
         snap.forEach((childSnapshot) => {
             userChannelIds.push(childSnapshot.key);
         });
 
         let channelsRef = database.ref('channels');
 
-        let fn = channelsRef.on('value', (snapshot) => {
-            console.log(userChannelIds);
-
-            let channels = [];
-
-            snapshot.forEach((childSnapshot) => {
-                channels.push(childSnapshot.val());
-            });
-
-            channels = channels.filter((channel) => {
-                return userChannelIds.some((id) => {
-                    return channel.channelId === id;
+        return channelsRef
+            .once('value', (snapshot) => {
+                snapshot.forEach((childSnapshot) => {
+                    channels.push(childSnapshot.val());
                 });
-            });
 
-            dispatch({
-                type: SET_USER_CHANNELS,
-                payload: channels,
+                channels = channels.filter((channel) => {
+                    return userChannelIds.some((id) => {
+                        return channel.channelId === id;
+                    });
+                });
+            })
+            .then(() => {
+                console.log('Fetching Channels Complete...');
+                dispatch({
+                    type: SET_USER_CHANNELS,
+                    payload: channels,
+                });
+                if (firstRender && channels.length > 0) {
+                    dispatch({ type: SET_CHANNEL, payload: channels[0] });
+                    dispatch(setMessages(channels[0].channelId));
+                    firstRender = false;
+                }
             });
-            channelsRef.off('value', fn);
-        });
     });
 };
 
-export const joinChannel = (channelId, channelName) => (dispatch, getState) => {
+export const joinChannel = (channel) => (dispatch, getState) => {
     const displayName = getState().user.user.displayName;
+    const { channelId, channelName } = channel;
     const userChannelRef = database.ref('userChannel');
-    userChannelRef.child(displayName).update({ [channelId]: channelName });
+    userChannelRef
+        .child(displayName)
+        .update({ [channelId]: channelName })
+        .then(() => {
+            dispatch(setChannel(channel));
+        });
     console.log(displayName, channelId);
 };

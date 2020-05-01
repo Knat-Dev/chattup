@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
     Container,
     makeStyles,
@@ -7,10 +7,23 @@ import {
     useTheme,
     useMediaQuery,
     Paper,
+    Typography,
+    CircularProgress,
+    FormControl,
+    TextField,
+    InputAdornment,
+    IconButton,
 } from '@material-ui/core';
 import NavList from '../layout/Navbar/NavList';
 import { Scrollbars } from 'react-custom-scrollbars';
 import Message from '../Chat/Message';
+import ChatTitle from '../Chat/ChatTitle';
+import { connect } from 'react-redux';
+import { Skeleton } from '@material-ui/lab';
+import Messages from '../Chat/Messages';
+import SendRoundedIcon from '@material-ui/icons/SendRounded';
+import { postMessageToChannel } from '../../redux/actions/messages';
+import PostMessageForm from '../Chat/PostMessageForm';
 
 const useStyles = makeStyles((theme) => ({
     sideBar: {
@@ -22,20 +35,33 @@ const useStyles = makeStyles((theme) => ({
         overflow: 'scroll',
     },
     chat: {
-        display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
-        height: 'calc(90vh - 63.99px)',
+        height: 'calc(85vh - 63.99px)',
         background: '#262626',
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        overflow: 'auto',
         [theme.breakpoints.down('xs')]: {
-            height: 'calc(90vh - 55.99px)',
+            height: 'calc(80vh - 55.99px)',
+        },
+    },
+    title: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: '1rem',
+    },
+    input: {
+        height: 'calc(15vh - 64px)',
+        [theme.breakpoints.down('xs')]: {
+            height: 'calc(20vh - 64px)',
         },
     },
 }));
 
-export default function Home() {
+function Home({
+    channel,
+    user: { displayName, photoURL },
+    postMessageToChannel,
+}) {
     const classes = useStyles();
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.down('xs'));
@@ -46,6 +72,10 @@ export default function Home() {
     };
 
     useEffect(scrollToBottom, []);
+
+    const onSuccess = () => {
+        scrollToBottom();
+    };
 
     return (
         <>
@@ -68,9 +98,25 @@ export default function Home() {
                         width="100%"
                         className={classes.chatRoom}
                     >
+                        <div className={classes.title}>
+                            <Typography variant="h5">
+                                {channel.channelName ? (
+                                    channel.channelName
+                                ) : (
+                                    <Skeleton
+                                        variant="text"
+                                        width={250}
+                                        animation="wave"
+                                    />
+                                )}
+                            </Typography>
+                        </div>
                         <div className={classes.chat}>
-                            <Message />
+                            <Messages onSuccess={onSuccess} />
                             <div ref={messagesEndRef} />
+                        </div>
+                        <div className={classes.input}>
+                            <PostMessageForm />
                         </div>
                     </Box>
                 </Box>
@@ -78,3 +124,10 @@ export default function Home() {
         </>
     );
 }
+
+const mapStateToProps = (state) => ({
+    channel: state.channel,
+    user: state.user.user,
+});
+
+export default connect(mapStateToProps, { postMessageToChannel })(Home);

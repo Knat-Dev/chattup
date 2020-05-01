@@ -20,6 +20,7 @@ import firebase, { storage, database } from '../../../firebase';
 import { uuid } from 'uuidv4';
 import { Add, Close as CloseIcon, CloudUpload } from '@material-ui/icons';
 import { connect } from 'react-redux';
+import { setChannel } from '../../../redux/actions/channel';
 const useStyles = makeStyles((theme) => ({
     nested: {
         paddingLeft: theme.spacing(4),
@@ -37,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const PostChannel = ({ displayName }) => {
+const PostChannel = ({ displayName, setChannel }) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [imgUrl, setImgUrl] = useState('');
@@ -125,6 +126,11 @@ const PostChannel = ({ displayName }) => {
                         ? imgUrl
                         : 'https://firebasestorage.googleapis.com/v0/b/chaterinno.appspot.com/o/images%2F5dfa1ed1-5f10-4495-96d6-5bd5d23c785f.png?alt=media&token=35c389f8-b1e6-4763-9f1b-d103303a8478',
                 }).then(() => {
+                    database
+                        .ref('channels/' + ref.key)
+                        .once('value', (snapshot) => {
+                            setChannel(snapshot.val());
+                        });
                     database
                         .ref('userChannel')
                         .child(displayName)
@@ -225,4 +231,4 @@ const PostChannel = ({ displayName }) => {
     );
 };
 
-export default connect()(PostChannel);
+export default connect(undefined, { setChannel })(PostChannel);

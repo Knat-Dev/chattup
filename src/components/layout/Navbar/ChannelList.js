@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core';
 import HashtagIcon from '../../../images/hashtag.svg';
 import { joinChannel } from '../../../redux/actions/user';
+import { setChannel } from '../../../redux/actions/channel';
 
 const useStyles = makeStyles((theme) => ({
     nested: {
@@ -25,12 +26,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ChannelList({
+    setChannel,
     joinChannel,
     userChannels,
     loading,
     allChannels,
     isAll,
     loadingAll,
+    selectedChannel,
 }) {
     const classes = useStyles();
 
@@ -59,12 +62,7 @@ function ChannelList({
                             <ListItemText primary={channel.channelName} />
                             <ListItemSecondaryAction>
                                 <Button
-                                    onClick={() =>
-                                        joinChannel(
-                                            channel.channelId,
-                                            channel.channelName
-                                        )
-                                    }
+                                    onClick={() => joinChannel(channel)}
                                     size="small"
                                     color="primary"
                                     variant="contained"
@@ -99,6 +97,15 @@ function ChannelList({
             !loading && userChannels.length > 0 ? (
                 userChannels.map((channel) => (
                     <ListItem
+                        selected={
+                            channel.channelId === selectedChannel.channelId
+                                ? true
+                                : false
+                        }
+                        onClick={() => {
+                            console.log(channel.channelId);
+                            setChannel(channel);
+                        }}
                         key={channel.channelId}
                         button
                         className={classes.nested}
@@ -144,6 +151,9 @@ const mapStateToProps = (state) => ({
     allChannels: state.channels.list,
     loadingAll: state.channels.loading,
     loading: state.user.channels.loading,
+    selectedChannel: state.channel,
 });
 
-export default connect(mapStateToProps, { joinChannel })(ChannelList);
+export default connect(mapStateToProps, { joinChannel, setChannel })(
+    ChannelList
+);

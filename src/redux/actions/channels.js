@@ -11,9 +11,7 @@ export const setChannels = (displayName) => (dispatch) => {
         });
 
         let channelsRef = database.ref('channels');
-        let fn = channelsRef.on('value', (snapshot) => {
-            console.log(userChannelIds);
-
+        channelsRef.once('value', (snapshot) => {
             let channels = [];
 
             snapshot.forEach((childSnapshot) => {
@@ -26,7 +24,6 @@ export const setChannels = (displayName) => (dispatch) => {
             });
 
             dispatch({ type: SET_CHANNELS, payload: channels });
-            channelsRef.off('value', fn);
         });
     });
 };
