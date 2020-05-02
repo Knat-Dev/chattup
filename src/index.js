@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import store from './redux/store';
 import { Provider } from 'react-redux';
 import { firebase } from './firebase';
-import { setUser, setUserChannels } from './redux/actions/user';
+import { setUser, setUserChannels, setUserStatus } from './redux/actions/user';
 import {
     SET_AUTHENTICATED,
     CLEAR_CHANNELS,
@@ -34,18 +34,18 @@ const renderApp = () => {
 
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-        console.log('logged in');
-        console.log(user, user.displayName);
         store.dispatch(setUser(user));
         store.dispatch({ type: SET_AUTHENTICATED });
         if (user.displayName) {
-            console.log('testtest');
+            console.log('Logged in');
+            console.log(user.displayName);
+            store.dispatch(setUserStatus(user.displayName));
             store.dispatch(setUserChannels(user.displayName));
             store.dispatch(setChannels(store.getState().user.user.displayName));
         }
         renderApp();
     } else {
-        console.log('logged out');
+        console.log('Logged out');
         store.dispatch({ type: CLEAR_CHANNELS });
         store.dispatch({ type: CLEAR_CHANNEL });
         store.dispatch({ type: CLEAR_MESSAGES });

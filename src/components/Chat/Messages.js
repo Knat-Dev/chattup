@@ -7,6 +7,7 @@ import {
     CircularProgress,
 } from '@material-ui/core';
 import { connect } from 'react-redux';
+import MessageSkeleton from './MessageSkeleton';
 
 function Messages({ userChannels, messages, displayName, loading, onSuccess }) {
     useEffect(() => {
@@ -15,69 +16,59 @@ function Messages({ userChannels, messages, displayName, loading, onSuccess }) {
 
     return (
         <>
-            {userChannels && userChannels.length > 0 ? (
-                loading ? (
-                    <Box
-                        height="100%"
-                        width="100%"
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        style={{ flexDirection: 'column' }}
-                    >
-                        <CircularProgress
-                            thickness={2}
-                            size={50}
-                            color="secondary"
-                            style={{ marginBottom: '1rem' }}
-                        />
-                        <Typography variant="body1" color="primary">
-                            Loading Messages...
-                        </Typography>
-                    </Box>
-                ) : messages.length > 0 ? (
-                    messages.map((message, index) => {
-                        const { body, createdAt, photoURL } = message;
+            {loading ? (
+                <Box
+                    height="100%"
+                    width="100%"
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    style={{ flexDirection: 'column' }}
+                >
+                    {[...Array(4)].map((item, index) => (
+                        <MessageSkeleton key={index} />
+                    ))}
+                </Box>
+            ) : messages.length > 0 ? (
+                messages.map((message, index) => {
+                    const { body, createdAt, photoURL } = message;
 
-                        return message.displayName === displayName ? (
-                            <Message
-                                key={index}
-                                messageOwner
-                                messageData={{
-                                    body,
-                                    createdAt,
-                                    displayName: message.displayName,
-                                    photoURL,
-                                }}
-                            />
-                        ) : (
-                            <Message
-                                key={index}
-                                messageData={{
-                                    body,
-                                    createdAt,
-                                    displayName: message.displayName,
-                                    photoURL,
-                                }}
-                            />
-                        );
-                    })
-                ) : (
-                    <Box
-                        height="100%"
-                        width="100%"
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        style={{ flexDirection: 'column' }}
-                    >
-                        <Typography variant="body1" color="primary">
-                            No messages, be the first to type!
-                        </Typography>
-                    </Box>
-                )
+                    return message.displayName === displayName ? (
+                        <Message
+                            key={index}
+                            messageOwner
+                            messageData={{
+                                body,
+                                createdAt,
+                                displayName: message.displayName,
+                                photoURL,
+                            }}
+                        />
+                    ) : (
+                        <Message
+                            key={index}
+                            messageData={{
+                                body,
+                                createdAt,
+                                displayName: message.displayName,
+                                photoURL,
+                            }}
+                        />
+                    );
+                })
             ) : (
-                <p>Please add a channel</p>
+                <Box
+                    height="100%"
+                    width="100%"
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    style={{ flexDirection: 'column' }}
+                >
+                    <Typography variant="body1" color="primary">
+                        No messages, be the first to type!
+                    </Typography>
+                </Box>
             )}
         </>
     );

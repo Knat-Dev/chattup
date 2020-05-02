@@ -126,9 +126,10 @@ export const signUp = (credentials, shouldLoad, history) => (dispatch) => {
                             photoURL: gravatar,
                         })
                         .then(() => {
+                            console.log('Registered and logged in.');
+                            dispatch(setUserStatus(credentials.displayName));
                             dispatch(setUserChannels(credentials.displayName));
                             dispatch(setChannels(credentials.displayName));
-
                             dispatch(clearErrors());
                         });
                 })
@@ -152,7 +153,8 @@ export const signUp = (credentials, shouldLoad, history) => (dispatch) => {
     });
 };
 
-export const logout = () => (dispatch) => {
+export const logout = () => (dispatch, getState) => {
+    dispatch(setStatusManual(getState().user.user.displayName, 'offline'));
     firebase.auth().signOut();
     dispatch({ type: LOGOUT });
 };
@@ -166,14 +168,13 @@ export const clearErrors = () => (dispatch) => {
 };
 
 export const setUser = (user) => (dispatch) => {
-    console.log('hi');
     dispatch({ type: SET_USER, payload: user });
 };
 
 export const setUserChannels = (displayName) => (dispatch) => {
     dispatch({ type: SET_LOADING_USER_CHANNELS });
+
     let firstRender = true;
-    console.log(displayName);
     return database.ref(`userChannel/${displayName}`).on('value', (snap) => {
         const userChannelIds = [];
         let channels = [];
@@ -221,4 +222,31 @@ export const joinChannel = (channel) => (dispatch, getState) => {
             dispatch(setChannel(channel));
         });
     console.log(displayName, channelId);
+};
+
+export const setUserStatus = (displayName) => (dispatch) => {
+    const statusRef = database.ref(`status/${displayName}`);
+    database.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() == false) return;
+        statusRef
+            .onDisconnect()
+            .set({
+                state: 'offline',
+                last_changed: new Date().toISOString(),
+            })
+            .then(() => {
+                statusRef.set({
+                    state: 'online',
+                    last_changed: new Date().toISOString(),
+                });
+            });
+    });
+};
+
+export const setStatusManual = (displayName, status) => (dispatch) => {
+    const statusRef = database.ref(`status/${displayName}`);
+    statusRef.set({
+        state: status,
+        last_changed: new Date().toISOString(),
+    });
 };

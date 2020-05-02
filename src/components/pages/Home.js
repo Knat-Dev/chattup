@@ -24,6 +24,8 @@ import Messages from '../Chat/Messages';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import { postMessageToChannel } from '../../redux/actions/messages';
 import PostMessageForm from '../Chat/PostMessageForm';
+import { usePageVisibility } from 'react-page-visibility';
+import { database } from '../../firebase';
 
 const useStyles = makeStyles((theme) => ({
     sideBar: {
@@ -66,9 +68,24 @@ function Home({
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.down('xs'));
     const messagesEndRef = useRef(null); // Scroll to bottom
+    const isVisible = usePageVisibility();
+
+    useEffect(() => {
+        const statusRef = database.ref(`status/${displayName}`);
+        if (!isVisible)
+            statusRef.set({
+                last_changed: new Date().toISOString(),
+                state: 'away',
+            });
+        else
+            statusRef.set({
+                last_changed: new Date().toISOString(),
+                state: 'online',
+            });
+    }, [isVisible]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current.scrollIntoView();
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(scrollToBottom, []);

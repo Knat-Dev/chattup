@@ -3,6 +3,7 @@ import { makeStyles, Grid, Avatar, Typography } from '@material-ui/core';
 import { BorderStyle } from '@material-ui/icons';
 import moment from 'moment';
 import ChangingDate from './ChangingDate';
+import PresenceAvatar from './PrecenceTracking/PresenceAvatar';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -18,10 +19,12 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: '200px',
     },
     avatar: {
-        marginRight: (props) => (!props.messageOwner ? 0 : theme.spacing(1)),
-        marginLeft: (props) => (props.messageOwner ? 0 : theme.spacing(1)),
         width: theme.spacing(8),
         height: theme.spacing(8),
+    },
+    presenceAvatar: {
+        marginRight: (props) => (!props.messageOwner ? 0 : theme.spacing(1)),
+        marginLeft: (props) => (props.messageOwner ? 0 : theme.spacing(1)),
     },
 }));
 
@@ -32,11 +35,9 @@ export default function Message({ messageOwner, messageData }) {
     const [momentTime, setMomentTime] = useState(moment(createdAt).fromNow());
     useEffect(() => {
         const newVal = moment(createdAt).fromNow();
-        console.log(newVal);
         setMomentTime(newVal);
         const Interval = setInterval(() => {
             const newVal = moment(createdAt).fromNow();
-            console.log(newVal);
             setMomentTime(newVal);
         }, 1000);
         return () => {
@@ -55,7 +56,17 @@ export default function Message({ messageOwner, messageData }) {
                 >
                     {messageOwner && (
                         <Grid item>
-                            <Avatar src={photoURL} className={classes.avatar} />
+                            <PresenceAvatar
+                                classNames={{
+                                    avatar: classes.avatar,
+                                    presenceAvatar: classes.presenceAvatar,
+                                }}
+                                avatarData={{
+                                    photoURL,
+                                    displayName,
+                                    messageOwner,
+                                }}
+                            />
                         </Grid>
                     )}
                     <Grid item>
@@ -77,7 +88,13 @@ export default function Message({ messageOwner, messageData }) {
                     </Grid>
                     {!messageOwner && (
                         <Grid item>
-                            <Avatar src={photoURL} className={classes.avatar} />
+                            <PresenceAvatar
+                                classNames={{
+                                    avatar: classes.avatar,
+                                    presenceAvatar: classes.presenceAvatar,
+                                }}
+                                avatarData={{ photoURL, displayName }}
+                            />
                         </Grid>
                     )}
                 </Grid>
