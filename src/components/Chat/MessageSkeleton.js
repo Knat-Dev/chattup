@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, Grid, Avatar, Typography } from '@material-ui/core';
+import { makeStyles, Grid, Avatar, Typography, Paper } from '@material-ui/core';
 import { BorderStyle } from '@material-ui/icons';
 import moment from 'moment';
 import ChangingDate from './ChangingDate';
@@ -11,55 +11,74 @@ const useStyles = makeStyles((theme) => ({
     },
     speech: {
         position: 'relative',
-        background: theme.palette.primary.main,
+        background: (props) =>
+            props.messageOwner ? theme.palette.primary.main : '#4f4f4f',
         borderRadius: '10px',
         padding: '20px',
-        minWidth: '50px',
-        maxWidth: '200px',
+        minWidth: '200px',
+        maxWidth: '300px',
     },
     avatar: {
-        marginRight: theme.spacing(1),
-        width: theme.spacing(8),
-        height: theme.spacing(8),
+        width: theme.spacing(6),
+        height: theme.spacing(6),
+        marginRight: (props) => (!props.messageOwner ? 0 : theme.spacing(1)),
+        marginLeft: (props) => (props.messageOwner ? 0 : theme.spacing(1)),
+    },
+    createdAtFrom: {
+        marginBottom: theme.spacing(2),
     },
 }));
 
-export default function MessageSkeleton() {
-    const classes = useStyles();
+export default function Message({ messageOwner }) {
+    const props = { messageOwner };
+    const classes = useStyles(props);
+
     return (
         <>
             <Grid container>
                 <Grid
                     container
                     alignItems="flex-start"
-                    justify={'flex-start'}
+                    justify={messageOwner ? 'flex-start' : 'flex-end'}
                     className={classes.container}
                 >
-                    <Grid item>
-                        <Skeleton variant="circle" className={classes.avatar} />
-                    </Grid>
-
+                    {messageOwner && (
+                        <Grid item>
+                            <Skeleton
+                                variant="circle"
+                                className={classes.avatar}
+                            />
+                        </Grid>
+                    )}
                     <Grid item>
                         <Grid container direction="column">
-                            <div className={classes.speech}>
+                            <Paper elevation={5} className={classes.speech}>
                                 <Typography variant="body1">
-                                    <Skeleton width={75} />
+                                    <Skeleton width={50} />
                                 </Typography>
                                 <Typography
-                                    className={classes.messageFromDate}
+                                    className={classes.createdAtFrom}
                                     variant="body2"
                                     color="textSecondary"
                                 >
-                                    <Skeleton width={100} />
+                                    <Skeleton width={80} />
                                 </Typography>{' '}
                                 <Typography variant="body1">
-                                    {' '}
-                                    <Skeleton width={75} />
-                                    <Skeleton width={75} />
+                                    <Skeleton width={100} />
+                                    <Skeleton width={90} />
+                                    <Skeleton width={100} />
                                 </Typography>
-                            </div>
+                            </Paper>
                         </Grid>
                     </Grid>
+                    {!messageOwner && (
+                        <Grid item>
+                            <Skeleton
+                                variant="circle"
+                                className={classes.avatar}
+                            />
+                        </Grid>
+                    )}
                 </Grid>
             </Grid>
         </>

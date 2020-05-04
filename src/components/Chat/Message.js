@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, Grid, Avatar, Typography } from '@material-ui/core';
+import { makeStyles, Grid, Avatar, Typography, Paper } from '@material-ui/core';
 import { BorderStyle } from '@material-ui/icons';
 import moment from 'moment';
 import ChangingDate from './ChangingDate';
@@ -15,16 +15,19 @@ const useStyles = makeStyles((theme) => ({
             props.messageOwner ? theme.palette.primary.main : '#4f4f4f',
         borderRadius: '10px',
         padding: '20px',
-        minWidth: '50px',
-        maxWidth: '200px',
+        minWidth: '200px',
+        maxWidth: '300px',
     },
     avatar: {
-        width: theme.spacing(8),
-        height: theme.spacing(8),
+        width: theme.spacing(6),
+        height: theme.spacing(6),
     },
     presenceAvatar: {
         marginRight: (props) => (!props.messageOwner ? 0 : theme.spacing(1)),
         marginLeft: (props) => (props.messageOwner ? 0 : theme.spacing(1)),
+    },
+    createdAtFrom: {
+        marginBottom: theme.spacing(2),
     },
 }));
 
@@ -71,19 +74,19 @@ export default function Message({ messageOwner, messageData }) {
                     )}
                     <Grid item>
                         <Grid container direction="column">
-                            <div className={classes.speech}>
+                            <Paper elevation={5} className={classes.speech}>
                                 <Typography variant="body1">
                                     {displayName}
                                 </Typography>
                                 <Typography
-                                    className={classes.messageFromDate}
+                                    className={classes.createdAtFrom}
                                     variant="body2"
                                     color="textSecondary"
                                 >
                                     {momentTime}
                                 </Typography>{' '}
                                 <Typography variant="body1">{body}</Typography>
-                            </div>
+                            </Paper>
                         </Grid>
                     </Grid>
                     {!messageOwner && (

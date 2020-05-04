@@ -15,6 +15,7 @@ import { postMessageToChannel } from '../../redux/actions/messages';
 import { SendRounded } from '@material-ui/icons';
 import Emoticons from './Emoticons';
 import { emojiIndex } from 'emoji-mart';
+import { database } from '../../firebase';
 const useStyles = makeStyles((theme) => ({
     form: {
         display: 'flex',
@@ -27,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
 
 function PostMessageForm({
     channel,
-    user: { displayName, photoURL },
+    user: { displayName, photoURL, uid },
     postMessageToChannel,
 }) {
     const classes = useStyles();
@@ -48,39 +49,19 @@ function PostMessageForm({
                 channelId: channel.channelId,
             });
             setBody('');
+            database.ref('typing').child(channel.channelId).child(uid).remove();
         }
     };
 
-    const colonToUnicode = (emoji) => {
-        /**
-         * let colonsRegex = new RegExp(
-        '(^|\\s)(:[a-zA-Z0-9-_+]+:(?:::skin-tone-[2-6]:)?)',
-        'g'
-    );
+    const handleKeyDown = async () => {
+        const typingRef = database.ref('typing');
 
-    let match;
-    while ((match = colonsRegex.exec(message))) {
-        let colons = match[2];
-        let offset = match.index + match[1].length;
-        let length = colons.length;
-
-        console.log(match, colons, offset, length);
-        const emoji = emojiIndex.emojis['the_horns'][1].native;
-        console.log(emoji);
-        return emoji;
-    }
-         */
-        // return message.replace(/:[A-Za-z0-9_+-]+:/g, (x) => {
-        //     x = x.replace(/:/g, '');
-        //     let emoji = emojiIndex.emojis[x];
-        //     if (typeof emoji !== 'undefined') {
-        //         let unicode = emoji.native;
-        //         if (typeof unicode !== 'undefined') return unicode;
-        //     }
-        //     x = ':' + x + ':';
-        //     return x;
-        // });
-        const oldBody = body;
+        if (body) {
+            await typingRef
+                .child(channel.channelId)
+                .child(uid)
+                .set(displayName);
+        }
     };
 
     const handleEmojiSelect = (emoji) => {
@@ -101,8 +82,17 @@ function PostMessageForm({
                     <TextField
                         inputRef={textInput}
                         value={body}
-                        onChange={(e) => setBody(e.target.value)}
-                        size={matches ? 'small' : 'medium'}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                            setBody(e.target.value);
+                            if (e.target.value === '')
+                                database
+                                    .ref('typing')
+                                    .child(channel.channelId)
+                                    .child(uid)
+                                    .remove();
+                        }}
+                        size={'small'}
                         variant="filled"
                         label="Message"
                         placeholder="Send Message"

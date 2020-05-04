@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
-    Container,
     makeStyles,
     Grid,
     Box,
@@ -8,24 +7,16 @@ import {
     useMediaQuery,
     Paper,
     Typography,
-    CircularProgress,
-    FormControl,
-    TextField,
-    InputAdornment,
-    IconButton,
 } from '@material-ui/core';
 import NavList from '../layout/Navbar/NavList';
-import { Scrollbars } from 'react-custom-scrollbars';
-import Message from '../Chat/Message';
-import ChatTitle from '../Chat/ChatTitle';
 import { connect } from 'react-redux';
 import { Skeleton } from '@material-ui/lab';
 import Messages from '../Chat/Messages';
-import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import { postMessageToChannel } from '../../redux/actions/messages';
 import PostMessageForm from '../Chat/PostMessageForm';
 import { usePageVisibility } from 'react-page-visibility';
 import { database } from '../../firebase';
+import { logout } from '../../redux/actions/user';
 
 const useStyles = makeStyles((theme) => ({
     sideBar: {
@@ -59,33 +50,40 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function Home({
-    channel,
-    user: { displayName, photoURL },
-    postMessageToChannel,
-}) {
+function Home({ channel, user: { displayName } }) {
     const classes = useStyles();
     const theme = useTheme();
     const matches = useMediaQuery(theme.breakpoints.down('xs'));
     const messagesEndRef = useRef(null); // Scroll to bottom
     const isVisible = usePageVisibility();
+    let con;
 
     useEffect(() => {
-        const statusRef = database.ref(`status/${displayName}`);
-        if (!isVisible)
-            statusRef.set({
-                last_changed: new Date().toISOString(),
-                state: 'away',
-            });
-        else
-            statusRef.set({
-                last_changed: new Date().toISOString(),
-                state: 'online',
-            });
+        console.log(displayName);
+        const connectionsRef = database.ref(`connections/${displayName}`);
+        const listener = database.ref('.info/connected').on('value', (snap) => {
+            if (snap.val() == false) return;
+            con = connectionsRef.push();
+            con.onDisconnect().remove();
+            if (isVisible)
+                con.set({
+                    state: 'online',
+                    last_changed: new Date().toISOString(),
+                });
+            else
+                con.set({
+                    state: 'away',
+                    last_changed: new Date().toISOString(),
+                });
+        });
+        return () => {
+            if (con) con.remove();
+            connectionsRef.off('value', listener);
+        };
     }, [isVisible]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView();
     };
 
     useEffect(scrollToBottom, []);
@@ -147,4 +145,4 @@ const mapStateToProps = (state) => ({
     user: state.user.user,
 });
 
-export default connect(mapStateToProps, { postMessageToChannel })(Home);
+export default connect(mapStateToProps, { postMessageToChannel, logout })(Home);

@@ -74,13 +74,22 @@ export const PresenceAvatar = ({
 }) => {
     const [state, setState] = useState('offline');
     useEffect(() => {
-        const statusRef = database.ref(`status/${displayName}`);
-        const listener = statusRef.on('value', (snapshot) => {
-            const status = snapshot.val().state;
-            setState(status);
+        const connectionsRef = database.ref(`connections/${displayName}`);
+        const listener = connectionsRef.on('value', (snapshot) => {
+            if (snapshot.val() === null) setState('offline');
+            else {
+                const arr = Object.values(snapshot.val());
+                let away = 0;
+                const len = arr.length;
+                arr.forEach((item) => {
+                    if (item.state === 'away') away++;
+                });
+                if (away === len) setState('away');
+                else setState('online');
+            }
         });
         return () => {
-            statusRef.off('value', listener);
+            connectionsRef.off('value', listener);
         };
     }, []);
 

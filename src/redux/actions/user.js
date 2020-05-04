@@ -154,8 +154,18 @@ export const signUp = (credentials, shouldLoad, history) => (dispatch) => {
 };
 
 export const logout = () => (dispatch, getState) => {
-    dispatch(setStatusManual(getState().user.user.displayName, 'offline'));
-    firebase.auth().signOut();
+    const connectionsRef = database.ref(
+        `connections/${getState().user.user.displayName}`
+    );
+    connectionsRef.remove();
+    setTimeout(() => {
+        firebase
+            .auth()
+            .signOut()
+            .then(() => {
+                localStorage.setItem('logout-event', 'logout' + Math.random());
+            });
+    }, 0);
     dispatch({ type: LOGOUT });
 };
 
@@ -224,24 +234,7 @@ export const joinChannel = (channel) => (dispatch, getState) => {
     console.log(displayName, channelId);
 };
 
-export const setUserStatus = (displayName) => (dispatch) => {
-    const statusRef = database.ref(`status/${displayName}`);
-    database.ref('.info/connected').on('value', (snap) => {
-        if (snap.val() == false) return;
-        statusRef
-            .onDisconnect()
-            .set({
-                state: 'offline',
-                last_changed: new Date().toISOString(),
-            })
-            .then(() => {
-                statusRef.set({
-                    state: 'online',
-                    last_changed: new Date().toISOString(),
-                });
-            });
-    });
-};
+export const setUserStatus = (displayName) => (dispatch, getState) => {};
 
 export const setStatusManual = (displayName, status) => (dispatch) => {
     const statusRef = database.ref(`status/${displayName}`);

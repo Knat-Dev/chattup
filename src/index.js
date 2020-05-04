@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import App, { history } from './App';
 import * as serviceWorker from './serviceWorker';
 import store from './redux/store';
 import { Provider } from 'react-redux';
@@ -12,6 +12,7 @@ import {
     CLEAR_CHANNELS,
     CLEAR_CHANNEL,
     CLEAR_MESSAGES,
+    LOGOUT,
 } from './redux/types';
 import LoadingPage from './components/util/LoadingPage';
 import { setChannels } from './redux/actions/channels';
@@ -46,6 +47,7 @@ firebase.auth().onAuthStateChanged((user) => {
         renderApp();
     } else {
         console.log('Logged out');
+        store.dispatch({ type: LOGOUT });
         store.dispatch({ type: CLEAR_CHANNELS });
         store.dispatch({ type: CLEAR_CHANNEL });
         store.dispatch({ type: CLEAR_MESSAGES });
