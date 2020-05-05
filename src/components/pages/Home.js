@@ -30,11 +30,11 @@ const useStyles = makeStyles((theme) => ({
     chat: {
         flexDirection: 'column',
         justifyContent: 'flex-end',
-        height: 'calc(85vh - 63.99px)',
+        height: 'calc(85vh - 64px)',
         background: '#262626',
         overflow: 'auto',
         [theme.breakpoints.down('xs')]: {
-            height: 'calc(80vh - 55.99px)',
+            height: 'calc(100vh - 168px)',
         },
     },
     title: {
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
     input: {
         height: 'calc(15vh - 64px)',
         [theme.breakpoints.down('xs')]: {
-            height: 'calc(20vh - 64px)',
+            height: '48px',
         },
     },
 }));
@@ -57,6 +57,23 @@ function Home({ channel, user: { displayName } }) {
     const messagesEndRef = useRef(null); // Scroll to bottom
     const isVisible = usePageVisibility();
     let con;
+
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView();
+    };
+
+    useEffect(scrollToBottom, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+            scrollToBottom();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     useEffect(() => {
         console.log(displayName);
@@ -81,12 +98,6 @@ function Home({ channel, user: { displayName } }) {
             connectionsRef.off('value', listener);
         };
     }, [isVisible]);
-
-    const scrollToBottom = () => {
-        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView();
-    };
-
-    useEffect(scrollToBottom, []);
 
     const onSuccess = () => {
         scrollToBottom();
@@ -131,7 +142,7 @@ function Home({ channel, user: { displayName } }) {
                             <div ref={messagesEndRef} />
                         </div>
                         <div className={classes.input}>
-                            <PostMessageForm />
+                            <PostMessageForm scrollBottom={onSuccess} />
                         </div>
                     </Box>
                 </Box>

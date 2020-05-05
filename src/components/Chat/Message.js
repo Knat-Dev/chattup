@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     speech: {
         position: 'relative',
         background: (props) =>
-            props.messageOwner ? theme.palette.primary.main : '#4f4f4f',
+            props.messageOwner ? theme.palette.primary.main : '#4a484f',
         borderRadius: '10px',
         padding: '20px',
         minWidth: '200px',

@@ -5,11 +5,8 @@ const useStyles = makeStyles((theme) => ({
     speech: {
         margin: theme.spacing(2),
         position: 'relative',
-        background: '#555',
-        borderRadius: '10px',
+        background: '#3f3a4a',
         fontStyle: 'italic',
-        minWidth: '200px',
-        maxWidth: '500px',
     },
     avatar: {
         width: theme.spacing(2),
@@ -65,8 +62,8 @@ function Typing({ typing, quantity }) {
         console.log(typing);
         if (typing && typing.length > 0) {
             quantity === 'singular'
-                ? setSentence('is typing.')
-                : setSentence('are typing.');
+                ? setSentence('is typing...')
+                : setSentence('are typing...');
             if (quantity !== 'singular') {
                 let names = typing.map((user) => {
                     return user.name;
@@ -80,16 +77,19 @@ function Typing({ typing, quantity }) {
             }
         }
     }, [typing]);
+
     return (
         <Grow in={typing.length > 0 ? true : false}>
-            <Paper elevation={5} className={classes.speech}>
-                <div className={classes.flex}>
-                    <div className={classes.dot}></div>
-                    <div className={classes.dot}></div>
-                    <div className={classes.dot}></div>
-                    {names} {sentence}
-                </div>
-            </Paper>
+            <Grid container>
+                <Paper elevation={5} className={classes.speech}>
+                    <div className={classes.flex}>
+                        <div className={classes.dot}></div>
+                        <div className={classes.dot}></div>
+                        <div className={classes.dot}></div>
+                        {names} {sentence}
+                    </div>
+                </Paper>
+            </Grid>
         </Grow>
     );
 }

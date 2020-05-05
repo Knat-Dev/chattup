@@ -23,10 +23,15 @@ const useStyles = makeStyles((theme) => ({
         height: '100%',
         paddingRight: theme.spacing(1),
         paddingLeft: theme.spacing(1),
+        [theme.breakpoints.down('xs')]: {
+            paddingRight: 0,
+            paddingLeft: 0,
+        },
     },
 }));
 
 function PostMessageForm({
+    scrollBottom,
     channel,
     user: { displayName, photoURL, uid },
     postMessageToChannel,
@@ -73,6 +78,13 @@ function PostMessageForm({
             setTimeout(() => {
                 textInput.current.focus();
             }, 0);
+    };
+
+    const handleFocus = (e) => {
+        console.log('focused!');
+        setTimeout(() => {
+            scrollBottom();
+        }, 500);
     };
 
     return (

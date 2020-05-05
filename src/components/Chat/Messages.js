@@ -25,13 +25,6 @@ function Messages({
     const [typingUsers, setTypingUsers] = useState([]);
 
     useEffect(() => {
-        setTimeout(() => {
-            setTyping(true);
-            onSuccess();
-        }, 1000);
-    }, [typing]);
-
-    useEffect(() => {
         setTypingUsers([]);
 
         if (channelId) {
@@ -50,6 +43,7 @@ function Messages({
                     console.log(typingUsers);
                 }
                 setTypingUsers(typingUsers);
+                onSuccess();
             });
 
             const removedListener = typingRef.on('child_removed', (snap) => {
