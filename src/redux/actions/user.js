@@ -159,12 +159,7 @@ export const logout = () => (dispatch, getState) => {
     );
     connectionsRef.remove();
     setTimeout(() => {
-        firebase
-            .auth()
-            .signOut()
-            .then(() => {
-                localStorage.setItem('logout-event', 'logout' + Math.random());
-            });
+        firebase.auth().signOut();
     }, 0);
     dispatch({ type: LOGOUT });
 };

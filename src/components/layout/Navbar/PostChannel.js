@@ -206,7 +206,11 @@ const PostChannel = ({ displayName, setChannel }) => {
                             </FormControl>
                         </DialogContent>
                         <DialogActions>
-                            <Button variant="contained" color="primary">
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleClose}
+                            >
                                 Cacnel
                             </Button>
                             <Button

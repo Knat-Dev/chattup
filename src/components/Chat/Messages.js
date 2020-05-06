@@ -21,7 +21,6 @@ function Messages({
     user: { uid, displayName },
     channel: { channelId },
 }) {
-    const [typing, setTyping] = useState(false);
     const [typingUsers, setTypingUsers] = useState([]);
 
     useEffect(() => {
@@ -74,6 +73,7 @@ function Messages({
                 typingRef.off('value', addedListener);
                 typingRef.off('value', removedListener);
                 connectedRef.off('value', connectedListener);
+                typingRef.child(uid).remove();
             };
         }
     }, [channelId]);
