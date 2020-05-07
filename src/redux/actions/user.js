@@ -209,7 +209,6 @@ export const setUserChannels = (displayName) => (dispatch) => {
                 });
                 if (firstRender && channels.length > 0) {
                     dispatch({ type: SET_CHANNEL, payload: channels[0] });
-                    dispatch(setMessages(channels[0].channelId));
                     firstRender = false;
                 }
             });

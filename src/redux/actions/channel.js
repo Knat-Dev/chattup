@@ -3,5 +3,4 @@ import { setMessages } from './messages';
 
 export const setChannel = (channel) => (dispatch) => {
     dispatch({ type: SET_CHANNEL, payload: channel });
-    dispatch(setMessages(channel.channelId));
 };

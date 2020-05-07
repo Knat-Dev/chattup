@@ -7,21 +7,75 @@ import {
     CircularProgress,
     Grow,
     Paper,
+    Button,
+    Grid,
 } from '@material-ui/core';
 import { connect } from 'react-redux';
 import MessageSkeleton from './MessageSkeleton';
 import transitions from '@material-ui/core/styles/transitions';
 import Typing from './Typing';
 import { database } from '../../firebase';
+import { setMessages } from '../../redux/actions/messages';
+
+const useStyles = makeStyles((theme) => ({
+    button: {
+        marginTop: theme.spacing(2),
+    },
+}));
 
 function Messages({
+    setMessages,
     messages,
-    loading,
     onSuccess,
     user: { uid, displayName },
     channel: { channelId },
 }) {
     const [typingUsers, setTypingUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [limit, setLimit] = useState(5);
+
+    const classes = useStyles();
+
+    const loadMore = () => {
+        setLimit(limit + 5);
+    };
+
+    useEffect(() => {
+        if (channelId) {
+            setLoading(true);
+            const messagesRef = database
+                .ref(`messages/${channelId}`)
+                .orderByChild('createdAt')
+                .limitToLast(limit);
+            const listener = messagesRef.once('value', (snap) => {
+                const messageArray = [];
+                snap.forEach((childSnap) => {
+                    messageArray.push(childSnap.val());
+                });
+                setMessages(messageArray);
+                setLoading(false);
+            });
+            return () => {
+                messagesRef.off('value', listener);
+            };
+        }
+    }, [channelId]);
+
+    useEffect(() => {
+        if (limit > 5) {
+            const messagesRef = database
+                .ref(`messages/${channelId}`)
+                .orderByChild('createdAt')
+                .limitToLast(limit);
+            messagesRef.once('value', (snap) => {
+                const messageArray = [];
+                snap.forEach((childSnap) => {
+                    messageArray.push(childSnap.val());
+                });
+                setMessages(messageArray);
+            });
+        }
+    }, [limit]);
 
     useEffect(() => {
         setTypingUsers([]);
@@ -79,10 +133,6 @@ function Messages({
     }, [channelId]);
 
     useEffect(() => {
-        messages && messages.length > 0 && onSuccess();
-    }, [messages]);
-
-    useEffect(() => {
         onSuccess();
     }, [typingUsers]);
 
@@ -99,6 +149,16 @@ function Messages({
                 </Box>
             ) : messages.length > 0 ? (
                 <>
+                    <Grid container justify="center" alignItems="center">
+                        <Button
+                            onClick={loadMore}
+                            color="primary"
+                            variant="contained"
+                            className={classes.button}
+                        >
+                            Load More
+                        </Button>
+                    </Grid>
                     {messages.map((message, index) => {
                         const { body, createdAt, photoURL } = message;
 
@@ -159,4 +219,4 @@ const mapStateToProps = (state) => ({
     channel: state.channel,
 });
 
-export default connect(mapStateToProps)(Messages);
+export default connect(mapStateToProps, { setMessages })(Messages);

@@ -47,12 +47,15 @@ function PostMessageForm({
         e.preventDefault();
         console.log(photoURL, displayName);
         if (body) {
-            postMessageToChannel({
-                body,
-                displayName,
-                photoURL: photoURL,
-                channelId: channel.channelId,
-            });
+            postMessageToChannel(
+                {
+                    body,
+                    displayName,
+                    photoURL: photoURL,
+                    channelId: channel.channelId,
+                },
+                scrollBottom
+            );
             setBody('');
             database.ref('typing').child(channel.channelId).child(uid).remove();
         }
@@ -78,13 +81,6 @@ function PostMessageForm({
             setTimeout(() => {
                 textInput.current.focus();
             }, 0);
-    };
-
-    const handleFocus = (e) => {
-        console.log('focused!');
-        setTimeout(() => {
-            scrollBottom();
-        }, 500);
     };
 
     return (
